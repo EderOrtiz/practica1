@@ -12,12 +12,14 @@ import { BehaviorSubject } from 'rxjs';
 export class BdserviceService {
   //Variable para manipular la conexión a la BD
   public database!: SQLiteObject;
+
+
   //variables para la creación de tablas
-  tablaNoticia: string = "CREATE TABLE IF NOT EXISTS noticia(id INTEGER PRIMARY KEY autoincrement, titulo VARCHAR(100) NOT NULL, texto VARCHAR(300) NOT NULL);"
+  tablaNoticia: string = "CREATE TABLE IF NOT EXISTS noticia(id INTEGER PRIMARY KEY autoincrement, titulo VARCHAR(100) NOT NULL, texto VARCHAR(300) NOT NULL);";
 
 
   //variables de insert en las tablas de registros iniciales
-  registroNoticia : string = "INSERT OR IGNORE INTO noticia(id,titulo,texto) VALUES (1,'Soy un titulo','Soy un texto de una noticia')"
+  registroNoticia: string = "INSERT OR IGNORE INTO noticia(id,titulo,texto) VALUES (1,'Soy un titulo','Soy un texto de una noticia');";
 
 
   //variables observables para las consultas en las tablas
@@ -29,15 +31,13 @@ export class BdserviceService {
 
 
  
- 
-  constructor(private alertController: AlertController  ,private sqlite: SQLite, private platform: Platform) {}
-
+  constructor(private alertController: AlertController ,private sqlite: SQLite, private platform: Platform) {
+    this.crearBD();
+  }
 
 
 
   //funcion para crear la base de datos
-
-
   crearBD(){
     //verificamos que la plataforma está lista
     this.platform.ready().then(()=>{
@@ -49,38 +49,38 @@ export class BdserviceService {
         //guardamos la conexión en mi variable global
         this.database = db;
         //llamar a la funcion que crea las tablas
+        this.crearTablas();
       }).catch(e=>{
         //capturamos y mostraremos el error en la creacion de la BD
-        this.presentAlert("Error en crear BD": + e);
+        this.presentAlert("Error en crear BD: " + e);
       })
     })
   }
 
-  crearTablas(){
+  async crearTablas(){
     try{
       //ejecutar la creacion de tablas
-      this.database.executeSql(this.tablaNoticia,[]);
+      await this.database.executeSql(this.tablaNoticia,[]);
 
       //ejecuto los registros
-      this.database.executeSql(this.registroNoticia,[]);
+      await this.database.executeSql(this.registroNoticia,[]);
       
       //actualizar el estatus de la BD
       this.isDBReady.next(true);
     }catch(e){
       //capturamos y mostramos el error en la creacion de las tablas
-      this.presentAlert("Error en Crear tablas " + e);
+      this.presentAlert("Error en Crear tablas: " + e);
     }
   }
 
 
 
 
-  async presentAlert() {
+  async presentAlert(msj:string) {
     const alert = await this.alertController.create({
-      header: 'Alert',
-      subHeader: 'Mensaje importantisimo',
-      message: '¡Esto es una alerta!',
-      buttons: ['Continuar'],
+      header: 'Error',
+      message: msj,
+      buttons: ['OK'],
     });
 
     await alert.present();
