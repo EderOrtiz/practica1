@@ -25,11 +25,11 @@
       </ion-item>
   
       <ion-item-options>
-        <ion-item-option>
+        <ion-item-option (click)="modificar(x)">
           <ion-icon slot="bottom" name="pencil-sharp"></ion-icon>
           Modificar
         </ion-item-option>
-        <ion-item-option color="danger">
+        <ion-item-option color="danger" (click)="eliminar(x)">
           <ion-icon slot="bottom" name="trash"></ion-icon>
           Eliminar
         </ion-item-option>

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { SQLite, SQLiteObject } from '@awesome-cordova-plugins/sqlite/ngx';
 import { AlertController, Platform, } from '@ionic/angular';
-import { BehaviorSubject } from 'rxjs';
-
+import { BehaviorSubject, Observable } from 'rxjs';
+import { Noticia } from './noticia'
 
 
 
@@ -35,7 +35,54 @@ export class BdserviceService {
     this.crearBD();
   }
 
+  //función para suscribirme al observable
+  dbState(){
+    return this.isDBReady.asObservable();
+  }
 
+
+  fetchNoticia(): Observable<Noticia[]>{
+    return this.listaNoticias.asObservable();
+  }
+
+  buscarNoticia(){
+    return this.database.executeSql('select * from noticia',[]).then(res=>{
+      //variable para almacenar consulta
+      let items: Noticia[] = [];
+      //validar si existen registros
+      if (res.rows.length > 0){
+        //procedo a recorrer y guardar
+        for(var i=0; i<res.rows.length; i++){
+          //agregar los datos a mi variable
+          items.push({
+            id: res.rows.item(i).id,
+            titulo: res.rows.item(i).titulo,
+            texto: res.rows.item(i).texto
+          })
+        }
+      }
+      //actualizar observable
+      this.listaNoticias.next(items as any);
+    })
+  }
+
+  insertarNoticias(titulo:any,texto:any){
+    return this.database.executeSql('insert into noticia(titulo,texto) values (?,?)',[titulo,texto]).then(res=>{
+      this.buscarNoticia();
+    })
+  }
+
+  actualizarNoticia(id:any,titulo:any,texto:any){
+    return this.database.executeSql('update noticia set titulo=?, texto=? where id=?',[titulo,texto,id]).then(res=>{
+      this.buscarNoticia();
+    })
+  }
+
+  eliminarNoticia(id:any){
+    return this.database.executeSql('delete from noticia where id=?',[id]).then(res=>{
+      this.buscarNoticia();
+    })
+  }
 
   //funcion para crear la base de datos
   crearBD(){
@@ -67,6 +114,7 @@ export class BdserviceService {
       
       //actualizar el estatus de la BD
       this.isDBReady.next(true);
+      this.buscarNoticia();
     }catch(e){
       //capturamos y mostramos el error en la creacion de las tablas
       this.presentAlert("Error en Crear tablas: " + e);
