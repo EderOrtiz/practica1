@@ -8,7 +8,7 @@ const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'listar',
+    redirectTo: 'usocamara',
     pathMatch: 'full'
   },
   {
